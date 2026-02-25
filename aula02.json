@@ -1,0 +1,48 @@
+// conectar ao banco
+use netflix;
+
+// inserir unico documento
+db.filmes.insertOne({
+    titulo:"Duna: Parte 2",
+    tipo:"Filme",
+    ano_lancamento:2024,
+    genero:["ficcao_cientifica","aventura"],
+    duracao_min:166,
+    avaliacao:{ // documento aninhado
+        media:8.5,
+        votos:342000
+    },
+    disponivel_em:["BR","US","PT"]
+})
+
+// mostrar coleções
+show collections
+
+// consulta todos os registros numa coleção
+db.filmes.find()
+
+// inserir multiplos documentos (dentro de array)
+db.filmes.insertMany([{
+    titulo:"Oppenheimer",
+    tipo:"filme",
+    ano_lancamento:2023,
+    genero:["drama","historia"],
+    duracao_min:180,
+},{
+    titulo:"The Bear",
+    tipo:"serie",
+    ano_lancamento:"2002",
+    genero:["drama","comedia"],
+    temporadas:3
+}])
+
+// buscar com filtro -> { chaveProcurada : valorProcurado }
+db.filmes.find({tipo:"serie"})
+
+// buscando 01 único documento (sempre o primeiro em caso de duplicidade)
+db.filmes.findOne({titulo:"Duna: Parte 2"})
+
+// busca de projeção -> retorna apenas campos específicos na consulta
+// (1 = incluir, 0 = excluir) da consulta
+db.filmes.find({tipo:"Filme"},{"titulo":1,"avaliacao.media":1,_id:0}) // consultando campo do subdocumento tmb
+
