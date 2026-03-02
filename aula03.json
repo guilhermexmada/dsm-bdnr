@@ -1,0 +1,87 @@
+// AULA 02 ===========================================================================================================
+// conectar ao banco
+use netflix;
+
+// inserir unico documento
+db.filmes.insertOne({
+    titulo:"Duna: Parte 2",
+    tipo:"Filme",
+    ano_lancamento:2024,
+    genero:["ficcao_cientifica","aventura"],
+    duracao_min:166,
+    avaliacao:{ // documento aninhado
+        media:8.5,
+        votos:342000
+    },
+    disponivel_em:["BR","US","PT"]
+})
+
+// mostrar coleções
+show collections
+
+// consulta todos os registros numa coleção
+db.filmes.find()
+
+// inserir multiplos documentos (dentro de array)
+db.filmes.insertMany([{
+    titulo:"Oppenheimer",
+    tipo:"filme",
+    ano_lancamento:2023,
+    genero:["drama","historia"],
+    duracao_min:180,
+},{
+    titulo:"The Bear",
+    tipo:"serie",
+    ano_lancamento:"2002",
+    genero:["drama","comedia"],
+    temporadas:3
+}])
+
+// buscar com filtro -> { chaveProcurada : valorProcurado }
+db.filmes.find({tipo:"serie"})
+
+// buscando 01 único documento (sempre o primeiro em caso de duplicidade)
+db.filmes.findOne({titulo:"Duna: Parte 2"})
+
+// busca de projeção -> retorna apenas campos específicos na consulta
+// (1 = incluir, 0 = excluir) da consulta
+db.filmes.find({tipo:"Filme"},{"titulo":1,"avaliacao.media":1,_id:0}) // consultando campo do subdocumento tmb
+
+// AULA 03 ===========================================================================================================
+
+// alterar o valor de um campo, 1ª chave de busca, 2ª chave c/ $set para alterar, e chaves interiores com os novos valores (campos em string)
+// acessar/alterar subdocumentos = documentoPai.documentoFilho.documentoFilho2 ...
+db.filmes.updateOne(
+    {titulo: "Duna: Parte 2"},
+    {$set:{"avaliacao.media":8.8,"avaliacao.votos":410000}}
+)
+
+// $push adiciona +1 item em uma lista de opções
+db.filmes.updateOne(
+{titulo:"Duna: Parte 2"},
+{$push:{disponivel_em:"AR"}}
+)
+
+// atualiza vários registros
+// insere novo campo com valor pré setado
+db.filmes.updateMany(
+    {ano_lancamento: 2023},
+    {$set:{catalogo_ativo: true}}
+)
+
+// remover registro específico
+db.filmes.deleteOne({titulo:"The Bear"})
+
+// remover vários registros
+db.filmes.deleteMany({catalogo_ativo:false})
+
+// *** CUIDADO AO REMOVER TODOS OS REGISTROS DE UMA VEZ -> deleteMany() sem parâmetro apaga tudo na base de dados ***
+// *** NÃO EXECUTAR ***
+db.filmes.deleteMany({})
+
+// recomendado não excluir registro e sim desativar usando um campo/chave!
+
+db.filmes.updateMany(
+    {ano_lancamento:{$lt:2010}},
+    {$set:{catalogo_ativo:false}}
+)
