@@ -1,0 +1,159 @@
+// =====================================================
+// STREAMFLIX — Estudo de Caso MongoDB
+// Aluno: GUILHERME SHIMADA PEREIRA
+// Turma: DSM3    Data de entrega: 06/04/2026
+// =====================================================
+
+// ── MISSÃO 1 — Populando o catálogo ───────────────────
+use streamflix
+
+// Lote 1: filmes
+db.titulos.insertMany([
+{
+titulo: "Bacurau",
+genero: ["Drama", "Suspense"],
+ano: 2019,
+disponivel_em: ["BR", "US"],
+catalogo_ativo: true,
+avaliacao: { media: 8.5, total_votos: 12000 }
+},
+{
+titulo: "Cangaço Novo",
+genero: ["Ação", "Drama"],
+ano: 2023,
+disponivel_em: ["BR"],
+catalogo_ativo: true,
+avaliacao: { media: 9.2, total_votos: 5400 }
+},
+{
+titulo: "Ainda Estou Aqui",
+genero: ["Drama"],
+ano: 2024,
+disponivel_em: ["BR", "PT"],
+catalogo_ativo: true,
+avaliacao: { media: 9.5, total_votos: 800 }
+},
+{
+titulo: "Caras e Bocas",
+genero: ["Comédia"],
+ano: 2009,
+disponivel_em: ["BR"],
+catalogo_ativo: true,
+avaliacao: { media: 7.0, total_votos: 3000 }
+},
+{
+titulo: "Navalha na Carne",
+genero: ["Drama"],
+ano: 1997,
+disponivel_em: ["BR"],
+catalogo_ativo: false,
+avaliacao: { media: 7.8, total_votos: 900 }
+}
+])
+
+// Tarefa 1.1 — Verificação
+db.titulos.find()
+db.titulos.countDocuments()
+
+// ── MISSÃO 2 — Usuários e avaliações ──────────────────
+
+// Inserção de usuários
+db.usuarios.insertMany([
+{ nome: "Ana Carvalho", email: "[ana.carvalho@email.com.br](mailto:ana.carvalho@email.com.br)", pais: "BR", plano: "premium", data_cadastro: "2023-03-15", ativo: true, historico: ["Bacurau", "Cangaço Novo"] },
+{ nome: "Lucas Ferreira", email: "[lucas.ferreira@email.com.br](mailto:lucas.ferreira@email.com.br)", pais: "BR", plano: "standard", data_cadastro: "2023-07-22", ativo: true, historico: ["O Poço"] },
+{ nome: "Camilo Herrera", email: "[camilo.herrera@correo.cl](mailto:camilo.herrera@correo.cl)", pais: "CL", plano: "standard", data_cadastro: "2023-01-18", ativo: false, historico: ["Argentina 1985"] },
+{ nome: "Beatriz Almeida", email: "[beatriz.almeida@email.com.br](mailto:beatriz.almeida@email.com.br)", pais: "BR", plano: "basico", data_cadastro: "2023-09-04", ativo: false, historico: ["Caras e Bocas"] }
+])
+
+// Inserção de avaliações
+db.avaliacoes.insertMany([
+{ titulo_avaliado: "Cangaço Novo", usuario: "Ana Carvalho", nota: 9, comentario: "Muito bom", data_avaliacao: "2024-02-10" },
+{ titulo_avaliado: "Bacurau", usuario: "Ana Carvalho", nota: 8, comentario: "Interessante", data_avaliacao: "2024-01-01" }
+])
+
+// Update de avaliação
+db.titulos.updateOne(
+{ titulo: "Bacurau" },
+{ $set: { "avaliacao.media": 8.7 } }
+)
+
+// Tarefa 2.1 — Verificação e Atualização
+db.usuarios.countDocuments()
+db.avaliacoes.countDocuments()
+db.titulos.updateOne( { titulo: "Succession" }, { $set: { "avaliacao.media": 9.7, "avaliacao.total_votos": 480003 } } )
+
+// ── MISSÃO 3 — Consultas ──────────────────────────────
+
+// Consulta 3.1 — Catálogo ativo no Brasil
+db.titulos.find({ catalogo_ativo: true, disponivel_em: "BR" })
+
+// Consulta 3.2 — Usuários ativos
+db.usuarios.find({ ativo: true })
+
+// Consulta 3.3 — Usuários inativos
+db.usuarios.find({ ativo: false })
+
+// Consulta 3.4 — Títulos por gênero Drama
+db.titulos.find({ genero: "Drama" })
+
+// Consulta 3.5 — Usuários premium ativos (ordenado por nome) db.usuarios.find( { plano: "premium", ativo: true }, { nome: 1, email: 1, pais: 1, _id: 0 } ).sort({ nome: 1 })
+
+// Consulta 3.6 — Consulta livre (exemplo) // Lista títulos ativos disponíveis no Brasil ou Portugal com nota >= 9. // Usa operadores $and, $in e comparação para filtrar qualidade e região. db.titulos.find({ $and: [ { catalogo_ativo: true }, { disponivel_em: { $in: ["BR", "PT"] } }, { "avaliacao.media": { $gte: 9 } } ] }, { titulo: 1, disponivel_em: 1, "avaliacao.media": 1, _id: 0 })
+
+// ── MISSÃO 4 — Gerenciando o catálogo ────────────────
+
+// Tarefa 4.1 — Suspender título
+db.titulos.updateOne(
+{ titulo: "Caras e Bocas" },
+{ $set: { catalogo_ativo: false } }
+)
+
+// Verificação
+db.titulos.find(
+{ catalogo_ativo: false },
+{ titulo: 1, catalogo_ativo: 1, _id: 0 }
+)
+
+// Tarefa 4.2 — Expandir disponibilidade
+db.titulos.updateOne(
+{ titulo: "Cangaço Novo" },
+{ $push: { disponivel_em: "MX" } }
+)
+
+db.titulos.updateOne(
+{ titulo: "Ainda Estou Aqui" },
+{ $push: { disponivel_em: "MX" } }
+)
+
+// Adicionar Chile também
+db.titulos.updateOne(
+{ titulo: "Cangaço Novo" },
+{ $push: { disponivel_em: "CL" } }
+)
+
+db.titulos.updateOne(
+{ titulo: "Ainda Estou Aqui" },
+{ $push: { disponivel_em: "CL" } }
+)
+
+// Verificação
+db.titulos.find({ titulo: "Cangaço Novo" })
+db.titulos.find({ titulo: "Ainda Estou Aqui" })
+
+// Tarefa 4.3 — Deletar usuários inativos
+
+// Passo 1: identificar
+db.usuarios.find(
+{ ativo: false },
+{ nome: 1, email: 1, _id: 0 }
+)
+
+// Passo 2: deletar
+db.usuarios.deleteMany({ ativo: false })
+
+// Passo 3: confirmar
+db.usuarios.countDocuments()
+
+// =====================================================
+// FIM
+// =====================================================
